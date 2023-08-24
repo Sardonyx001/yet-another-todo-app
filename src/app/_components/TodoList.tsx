@@ -3,7 +3,10 @@ import { useState } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { trpc } from "../_trpc/client";
 import { inferRouterOutputs } from "@trpc/server";
+import Image from "next/image";
 import type { AppRouter } from "@/server";
+
+
 
 export default function TodoList() {
     const getTodos = trpc.getTodos.useQuery(undefined,{
@@ -37,7 +40,6 @@ export default function TodoList() {
     const [content, setContent] = useState("");
 
     const [isEditing, setIsEditing] = useState(false);
-
 
     const onDragEnd = (
         result: inferRouterOutputs<AppRouter>['getTodos'] | DropResult
@@ -80,9 +82,8 @@ export default function TodoList() {
                 <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Todo List</h2>
                     <ul>
                         {getTodos?.data?.map((todo) => (
-                            <li key={todo.id} className="flex items-center mb-2">
-                                <input
-                                    id={`check-${todo.id}`}
+                            <li key={todo.id} className="group flex items-center mb-2">
+                                <input id={`check-${todo.id}`}
                                     type="checkbox" 
                                     checked={!!todo.done}
                                     className="mr-2 h-5 w-5 text-blue-500 focus:ring focus:ring-blue-300"
@@ -91,10 +92,10 @@ export default function TodoList() {
                                                 id: todo.id,
                                                 done: todo.done ? 0 : 1,
                                             });
-                                        }}
-                                    />
-                                <div className = {`flex-grow cursor-pointer ${
-                                    todo.done ? "line-through text-gray-500" : "text-gray-800 dark:text-white"
+                                }}/>
+                                <div id={`content-${todo.id}`}
+                                    className = {`flex-grow cursor-pointer ${
+                                        todo.done ? "line-through text-gray-500" : "text-gray-800 dark:text-white"
                                 }`}>
                                     {
                                         isEditing ? 
@@ -114,29 +115,28 @@ export default function TodoList() {
                                                     setIsEditing(false);
                                                 }
                                             }}
-                                            defaultValue = {todo.content!}/> 
+                                            defaultValue = {todo.content!}
+                                        /> 
                                         </form>
                                         : <div onDoubleClick ={()=> setIsEditing(true)}>{todo.content}</div>
                                     }
                                 </div>
-                                <button 
+                                <button id={`edit-${todo.id}`}
                                     title="Edit"
-                                    id={`update-${todo.id}`}
                                     onClick={async () => {
                                         setIsEditing(isEditing => !isEditing);
                                     }}
-                                    className="ml-2 text-sm text-gray-500 hover:text-blue-500">
+                                    className="invisible group-hover:visible ml-2 text-sm text-gray-500 hover:text-blue-500">
                                     {isEditing ? `Editing`:`Edit`}
                                 </button>
-                                <button 
+                                <button id={`del-${todo.id}`}
                                     title="Delete"
-                                    id={`del-${todo.id}`}
                                     onClick={async () => {
                                         deleteTodo.mutate({
                                             id: todo.id,
                                         });
                                     }}
-                                    className="ml-2 text-sm text-gray-500 hover:text-red-500">
+                                    className="invisible group-hover:visible ml-2 text-sm text-gray-500 hover:text-red-500">
                                     Remove
                                 </button>
                             </li>
