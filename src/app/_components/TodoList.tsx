@@ -36,6 +36,9 @@ export default function TodoList() {
 
     const [content, setContent] = useState("");
 
+    const [isEditing, setIsEditing] = useState(false);
+
+
     const onDragEnd = (
         result: inferRouterOutputs<AppRouter>['getTodos'] | DropResult
         ) => {
@@ -75,7 +78,6 @@ export default function TodoList() {
 
             <div className="border p-4 rounded-lg shadow-md bg-white dark:bg-gray-800">
                 <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Todo List</h2>
-                <DragDropContext onDragEnd={onDragEnd}>
                     <ul>
                         {getTodos?.data?.map((todo) => (
                             <li key={todo.id} className="flex items-center mb-2">
@@ -85,35 +87,61 @@ export default function TodoList() {
                                     checked={!!todo.done}
                                     className="mr-2 h-5 w-5 text-blue-500 focus:ring focus:ring-blue-300"
                                     onChange={async () => {
-                                        setDone.mutate({
-                                            id: todo.id,
-                                            done: todo.done ? 0 : 1,
-                                        });
-                                    }}
+                                            setDone.mutate({
+                                                id: todo.id,
+                                                done: todo.done ? 0 : 1,
+                                            });
+                                        }}
                                     />
-                                <label
-                                    htmlFor={`check-${todo.id}`}
-                                    className={`flex-grow cursor-pointer ${
-                                        todo.done ? "line-through text-gray-500" : "text-gray-800 dark:text-white"
-                                    }`}
-                                    >
-                                    {todo.content}
-                                </label>
-                                <button
+                                <div className = {`flex-grow cursor-pointer ${
+                                    todo.done ? "line-through text-gray-500" : "text-gray-800 dark:text-white"
+                                }`}>
+                                    {
+                                        isEditing ? 
+                                        <form>
+                                        <input 
+                                            type = 'text' 
+                                            onChange={ async (e) => {
+                                                if(e.target.value!==""){
+                                                    updateTodo.mutate({
+                                                        id: todo.id,
+                                                        content: e.target.value
+                                                    })
+                                                }
+                                            }} 
+                                            onKeyDown={(e) => {
+                                                if(e.key === "Enter"){
+                                                    setIsEditing(false);
+                                                }
+                                            }}
+                                            defaultValue = {todo.content!}/> 
+                                        </form>
+                                        : <div onDoubleClick ={()=> setIsEditing(true)}>{todo.content}</div>
+                                    }
+                                </div>
+                                <button 
+                                    title="Edit"
+                                    id={`update-${todo.id}`}
+                                    onClick={async () => {
+                                        setIsEditing(isEditing => !isEditing);
+                                    }}
+                                    className="ml-2 text-sm text-gray-500 hover:text-blue-500">
+                                    {isEditing ? `Editing`:`Edit`}
+                                </button>
+                                <button 
+                                    title="Delete"
                                     id={`del-${todo.id}`}
                                     onClick={async () => {
                                         deleteTodo.mutate({
                                             id: todo.id,
                                         });
                                     }}
-                                    className="text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-md text-xs px-2 py-1 ml-2 bg-red-100 dark:bg-red-800 dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900"
-                                    >
-                                    x
+                                    className="ml-2 text-sm text-gray-500 hover:text-red-500">
+                                    Remove
                                 </button>
                             </li>
                         ))}
                     </ul>
-                </DragDropContext>
             </div>
         </div>
     );

@@ -56,7 +56,7 @@ export const appRouter = router({
         .input(
             z.object({
                 id: z.number(),
-                content: z.string(),
+                content: z.string().nullish(),
             })
         )        
         .mutation(async (opts) => {
