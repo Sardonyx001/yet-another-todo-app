@@ -1,11 +1,11 @@
-import { z } from "zod";
+import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import { eq } from "drizzle-orm";
+
+import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { publicProcedure, router } from "./trpc";
 import { todos } from "@/db/schema";
-
-import Database from "better-sqlite3";
-import { eq } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
+import { z } from "zod";
 
 const sqlite = new Database("sqlite.db");
 const db = drizzle(sqlite);
@@ -49,6 +49,20 @@ export const appRouter = router({
         .mutation(async (opts) => {
             db
             .delete(todos)
+            .where(eq(todos.id, opts.input.id))
+            .run()
+        }),
+    updateTodo: publicProcedure
+        .input(
+            z.object({
+                id: z.number(),
+                content: z.string(),
+            })
+        )        
+        .mutation(async (opts) => {
+            db
+            .update(todos)
+            .set({content: opts.input.content})
             .where(eq(todos.id, opts.input.id))
             .run()
         }),

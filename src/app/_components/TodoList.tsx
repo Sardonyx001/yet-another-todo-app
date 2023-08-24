@@ -2,9 +2,8 @@
 import { useState } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { trpc } from "../_trpc/client";
-import type { AppRouter } from "@/server";
 import { inferRouterOutputs } from "@trpc/server";
-import { z } from "zod";
+import type { AppRouter } from "@/server";
 
 export default function TodoList() {
     const getTodos = trpc.getTodos.useQuery(undefined,{
@@ -22,6 +21,12 @@ export default function TodoList() {
             getTodos.refetch();
         },
     });
+
+    const updateTodo = trpc.updateTodo.useMutation({
+        onSettled: () => {
+            getTodos.refetch();
+        }
+    })
 
     const deleteTodo = trpc.deleteTodo.useMutation({
         onSettled: () => {
